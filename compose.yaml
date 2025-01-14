@@ -1,0 +1,6 @@
+﻿services:
+  nezerdofarmapp:
+    image: nezerdofarmapp
+    build:
+      context: .
+      dockerfile: NezerdoFarmApp/Dockerfile
