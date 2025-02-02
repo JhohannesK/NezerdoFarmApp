@@ -2,6 +2,7 @@
 
 NezerdoFarmApp/bin
 NezerdoFarmApp/obj
+NezerdoFarmApp/appsettings.Development.json
 
 *.swp
 *.*~
