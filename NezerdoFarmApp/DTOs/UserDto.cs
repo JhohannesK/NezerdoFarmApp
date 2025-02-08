@@ -24,7 +24,7 @@ public class SignInDto
 
 public class SignInAuthResponse
 {
-    public required UserDto User { get; set; }
+    public required UserDto? User { get; set; }
 }
 
 public class SignUpDto

@@ -93,6 +93,14 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.Use(async (context, next) =>
+{
+    var user = context.User.Identity?.Name;
+    Console.WriteLine($"Current User: {user ?? "Anonymous"}");
+    await next();
+});
+
+
 app.UseHttpsRedirection();
 
 app.UseAuthentication();

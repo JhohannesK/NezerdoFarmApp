@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NezerdoFarmApp.DTOs;
 using NezerdoFarmApp.Interfaces;
+using NezerdoFarmApp.Shared;
 
 namespace NezerdoFarmApp.Controllers;
 
@@ -36,5 +37,12 @@ public class AuthController(IAuthService authenticationService): ControllerBase
         }
 
         return BadRequest(result);
+    }
+
+    [HttpPost("logout")]
+    public async Task<ActionResult<Result<string>>> Logout()
+    {
+        Response.Cookies.Delete("token");
+        return Ok(Result.Success("Logout user successfully"));
     }
 }
