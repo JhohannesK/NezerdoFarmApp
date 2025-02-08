@@ -13,12 +13,8 @@ using NezerdoFarmApp.Shared;
 
 namespace NezerdoFarmApp.Services;
 
-public class AuthService(ApplicationDbContext dataContext, IConfiguration _configuration, UserManager<User> userManager) : IAuthService
+public class AuthService(ApplicationDbContext dataContext, IConfiguration _configuration, UserManager<User> userManager, IHttpContextAccessor _httpContextAccessor) : IAuthService
 {
-     private readonly ApplicationDbContext dataContext = dataContext;
-    private readonly UserManager<User> userManager = userManager;
-    private readonly IConfiguration _configuration = _configuration;
-
     public async Task<Result<SignInAuthResponse>> SignInAction(SignInDto signInDTO)
     {
         var user = await userManager.FindByEmailAsync(signInDTO.Email);
@@ -34,28 +30,19 @@ public class AuthService(ApplicationDbContext dataContext, IConfiguration _confi
             return Result.Failure<SignInAuthResponse>("Invalid Credentials");
         }
 
-
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
-        var tokenDescriptor = new SecurityTokenDescriptor()
+        var token = GenerateJwtToken(user);
+        var context = _httpContextAccessor.HttpContext.Response;
+        context.Cookies.Append("token", token, new CookieOptions
         {
-            Subject = new ClaimsIdentity(
-            [
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Email),
-                // REVIEW: Check to see how best I can add the permissions as claims.
-                // new Claim(ClaimTypes.Role, user.Role)
-            ]),
-            Expires = DateTime.UtcNow.AddHours(1),
-            Issuer = _configuration["Jwt:Issuer"],
-            Audience = _configuration["Jwt:Audience"], 
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-        };
-        var token = tokenHandler.CreateToken(tokenDescriptor);
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTime.UtcNow.AddHours(1)
+        });
+        
         var response = new SignInAuthResponse
         {
             User = AuthMappings.MapToUserDto(user),
-            Token = tokenHandler.WriteToken(token)
         };
         return Result.Success<SignInAuthResponse>(response);
     }
@@ -97,6 +84,29 @@ public class AuthService(ApplicationDbContext dataContext, IConfiguration _confi
     private async Task<bool> CheckUserExist(string email)
     {
         return await dataContext.Users.AnyAsync(u => u.Email == email);
+    }
+
+    private string GenerateJwtToken(User user)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
+        var tokenDescriptor = new SecurityTokenDescriptor()
+        {
+            Subject = new ClaimsIdentity(
+            [
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.Email),
+                // REVIEW: Check to see how best I can add the permissions as claims.
+                // new Claim(ClaimTypes.Role, user.Role)
+            ]),
+            Expires = DateTime.UtcNow.AddHours(1),
+            Issuer = _configuration["Jwt:Issuer"],
+            Audience = _configuration["Jwt:Audience"], 
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+        };
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+
+        return tokenHandler.WriteToken(token);
     }
 
     #endregion

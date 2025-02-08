@@ -24,10 +24,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(
         )
     );
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(options => 
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -44,6 +46,28 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
     };
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var token = context.Request.Cookies["token"];
+            if (!string.IsNullOrEmpty(token))
+            {
+                context.Token = token;
+            }
+
+            return Task.CompletedTask;
+        }
+    };
+});
+
+builder.Services.AddCors(options => 
+{ 
+    options.AddPolicy("origin", 
+        builder => builder 
+            .WithOrigins("*") 
+            .AllowAnyHeader() 
+            .AllowAnyMethod()); 
 });
 
 var app = builder.Build();
@@ -71,6 +95,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

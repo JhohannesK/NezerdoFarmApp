@@ -1,4 +1,6 @@
 ﻿
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace NezerdoFarmApp.Controllers;
@@ -7,8 +9,11 @@ namespace NezerdoFarmApp.Controllers;
 public class FarmController : ControllerBase
 {
     [HttpPost("create-farm")]
+    [Authorize]
     public async Task<IActionResult> CreateFarm()
     {
-        return Ok();
+        var username = User.Identity?.Name;
+        var email = User.FindFirst(ClaimTypes.Email)?.Value;
+        return Ok(new {username, email});
     }
 }
