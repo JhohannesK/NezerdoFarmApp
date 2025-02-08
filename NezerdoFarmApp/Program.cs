@@ -1,8 +1,13 @@
+using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NezerdoFarmApp;
 using NezerdoFarmApp.Models;
 using Scalar.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using NezerdoFarmApp.Interfaces;
+using NezerdoFarmApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,8 +26,37 @@ builder.Services.AddDbContext<ApplicationDbContext>(
 
 builder.Services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddAuthentication(options => 
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options => 
+{
+    options.TokenValidationParameters = new TokenValidationParameters()
+    {
+        ValidateIssuer= true,
+        ValidateAudience= true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+    };
+});
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+         
+    if (!await roleManager.RoleExistsAsync("Admin"))
+        await roleManager.CreateAsync(new IdentityRole("Admin"));
+         
+    if (!await roleManager.RoleExistsAsync("User"))
+        await roleManager.CreateAsync(new IdentityRole("User"));
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

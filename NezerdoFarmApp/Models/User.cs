@@ -7,9 +7,9 @@ namespace NezerdoFarmApp.Models
 		public required string FirstName { get; set; }
 		public required string LastName { get; set; }
 		public string? MiddleName { get; set; }
-		public DateTime CreatedAt { get; set; } = DateTime.Now;
-		public DateTime UpdatedAt { get; set; } = DateTime.Now;
-		public Guid FarmId { get; set; }
+		public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+		public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+		public Guid? FarmId { get; set; }
 
 		public virtual Farm Farm { get; set; }
 		public virtual ICollection<FarmUserRole> FarmUserRoles { get; set; }

@@ -48,6 +48,14 @@ namespace NezerdoFarmApp
 				.HasOne(fur => fur.User)
 				.WithMany(u => u.FarmUserRoles)
 				.HasForeignKey(fur => fur.UserId);
+			
+			builder.Entity<Farm>()
+				.Property(f => f.FarmId)
+				.HasDefaultValueSql("uuid_generate_v4()");
+
+			builder.Entity<Sale>()
+				.Property(s => s.SaleId)
+				.HasDefaultValueSql("uuid_generate_v4()");
 		}
 	}
 }

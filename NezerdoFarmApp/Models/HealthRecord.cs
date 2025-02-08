@@ -4,8 +4,8 @@ namespace NezerdoFarmApp.Models
 {
 	public class HealthRecord
 	{
-		public Guid HealthRecordId { get; set; }
-		public required Guid LivestockId { get; set; }
+		public int HealthRecordId { get; set; }
+		public required int LivestockId { get; set; }
 		public Livestock Livestock { get; set; } = null!;
 		public required string NameOfDrug { get; set; }
 		[Column(TypeName = "varchar(50)")]

@@ -2,7 +2,7 @@
 {
 	public class Livestock
 	{
-		public Guid LivestockId { get; set; }
+		public int LivestockId { get; set; }
 		public required Guid FarmId { get; set; }
 		public Farm Farm { get; set; }
 		public required string LiveStockType { get; set; }
