@@ -6,5 +6,5 @@ namespace NezerdoFarmApp.Interfaces;
 
 public interface IFarmService
 {
-    Task<Result<Farm>> CreateFarmAsync(CreateFarmDto createFarmDto);
+    Task<Result<FarmDto>> CreateFarmAsync(CreateFarmDto createFarmDto, string userId);
 }

@@ -15,19 +15,19 @@ namespace NezerdoFarmApp.Services;
 
 public class AuthService(ApplicationDbContext dataContext, IConfiguration configuration, UserManager<User> userManager, IHttpContextAccessor httpContextAccessor) : IAuthService
 {
-    public async Task<Result<SignInAuthResponse>> SignInAction(SignInDto signInDto)
+    public async Task<Result<UserDto>> SignInAction(SignInDto signInDto)
     {
         var user = await userManager.FindByEmailAsync(signInDto.Email);
 
-        if (user == null)
+        if (user is not { EmailConfirmed: true })
         {
-            return Result.Failure<SignInAuthResponse>("Invalid Credentials");
+            return Result.Failure<UserDto>("Invalid Credentials");
         }
         var mappedUser = AuthMappings.MapToUserDto(user);
 
         if (!BCrypt.Net.BCrypt.Verify(signInDto.Password, user.PasswordHash))
         {
-            return Result.Failure<SignInAuthResponse>("Invalid Credentials");
+            return Result.Failure<UserDto>("Invalid Credentials");
         }
 
         var token = GenerateJwtToken(user);
@@ -39,20 +39,18 @@ public class AuthService(ApplicationDbContext dataContext, IConfiguration config
             SameSite = SameSiteMode.Strict,
             Expires = DateTime.UtcNow.AddHours(1)
         });
-        
-        var response = new SignInAuthResponse
-        {
-            User = AuthMappings.MapToUserDto(user),
-        };
-        return Result.Success<SignInAuthResponse>(response);
+
+
+        if (mappedUser != null) return Result.Success(mappedUser);
+        return Result.Failure<UserDto>("Could not sign in user");
     }
 
-    public async Task<Result<string>> SignUpAction(SignUpDto signUpDto)
+    public async Task<Result<string>> AdminSignUpActionAsync(SignUpDto signUpDto)
     {
-        if (!Enum.TryParse<Roles>(signUpDto.Role, true, out var userRole))
-        {
-            return Result.Failure<string>("Invalid Role provided. Accepted values are 'User' or 'Admin'");
-        }
+        // if (!Enum.TryParse<Roles>(signUpDto.Role, true, out var userRole))
+        // {
+        //     return Result.Failure<string>("Invalid Role provided. Accepted values are 'User' or 'Admin'");
+        // }
         if (await CheckUserExist(signUpDto.Email))
         {
             return Result.Success("User already exits with this email.");
@@ -66,18 +64,24 @@ public class AuthService(ApplicationDbContext dataContext, IConfiguration config
             PasswordHash= hashedPassword,
             UserName = signUpDto.FirstName,
             MiddleName = signUpDto.MiddleName,
-            PhoneNumber = signUpDto.PhoneNumber
+            PhoneNumber = signUpDto.PhoneNumber,
+            EmailConfirmed = true
         };
         
         var result = await userManager.CreateAsync(user);
         if (result.Succeeded)
         {
-            await userManager.AddToRoleAsync(user, signUpDto.Role);
+            await userManager.AddToRoleAsync(user, "Admin");
             return Result.Success("Sign up successful!");
         }
         // await dataContext.SaveChangesAsync();
 
         return Result.Success("Could not Sign up user");
+    }
+
+    public async Task<Result<string>> AddUserToFarmAsync(SignUpDto signUpDTO)
+    {
+        throw new NotImplementedException();
     }
     
     #region Helper methods
@@ -96,6 +100,7 @@ public class AuthService(ApplicationDbContext dataContext, IConfiguration config
             [
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email ?? ""),
+                new Claim(ClaimTypes.Name, user.LastName + " " + user.FirstName)
                 // REVIEW: Check to see how best I can add the permissions as claims.
                 // new Claim(ClaimTypes.Role, user.Role)
             ]),

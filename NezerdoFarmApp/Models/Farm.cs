@@ -15,8 +15,8 @@ namespace NezerdoFarmApp.Models
 		public required string FarmOwner { get; set; }
 
 		public virtual ICollection<User> Users { get; set; }
-		public ICollection<Sale> Sales {get;set;}	
-		public ICollection<Feed> Feeds {get;set;}
+		public virtual ICollection<Sale> Sales {get;set;}	
+		public virtual ICollection<Feed> Feeds {get;set;}
 		public virtual ICollection<FarmUserRole> FarmUserRoles { get; set; }
 
 	}

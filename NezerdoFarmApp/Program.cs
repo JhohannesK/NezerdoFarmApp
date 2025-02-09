@@ -28,6 +28,8 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IFarmService, FarmServices>();
+builder.Services.AddScoped<IFarmRoleService, FarmRoleService>();
 
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(options => 

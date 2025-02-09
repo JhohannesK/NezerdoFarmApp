@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using NezerdoFarmApp.Models;
 
@@ -28,6 +29,16 @@ namespace NezerdoFarmApp
 		{
 			base.OnModelCreating(builder);
 
+			builder.Ignore<IdentityRoleClaim<string>>();
+			builder.Entity<User>()
+				.ToTable("Users");
+			
+			builder.Entity<IdentityUserRole<string>>()
+				.ToTable("UserSysRole");
+
+			builder.Entity<IdentityRole>()
+				.ToTable("SysRoles");
+
 			builder.Entity<FarmRolePermission>()
 				.HasKey(frp => new { frp.FarmRoleId, frp.PermissionId });
 
@@ -52,6 +63,14 @@ namespace NezerdoFarmApp
 			builder.Entity<Farm>()
 				.Property(f => f.FarmId)
 				.HasDefaultValueSql("uuid_generate_v4()");
+
+			builder.Entity<Farm>()
+				.Property(f => f.FarmName)
+				.IsRequired();
+
+			builder.Entity<Farm>()
+				.HasIndex(f => f.FarmName)
+				.IsUnique();
 
 			builder.Entity<Sale>()
 				.Property(s => s.SaleId)

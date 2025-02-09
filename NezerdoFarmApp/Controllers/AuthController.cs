@@ -17,13 +17,19 @@ public class AuthController(IAuthService authenticationService): ControllerBase
             return BadRequest("Password and Confirm Password do not match");
         }
 
-        var result = await authenticationService.SignUpAction(signUpDto);
+        var result = await authenticationService.AdminSignUpActionAsync(signUpDto);
         if (result.IsSuccess)
         {
             return Ok(result);
         }
 
         return BadRequest(result);
+    }
+
+    [HttpPost("add-user")]
+    public async Task<IActionResult> AddUserToFarm(SignUpDto signUpDto)
+    {
+        return Ok();
     }
 
     [HttpPost("signin")]

@@ -37,7 +37,6 @@ public class SignUpDto
     public required string Password { get; set; }
     public required string ConfirmPassword { get; set; }
     public required string PhoneNumber { get; set; }
-    public string Role { get; set; } = "User";
 }
 
 
