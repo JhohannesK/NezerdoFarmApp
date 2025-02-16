@@ -5,7 +5,7 @@ namespace NezerdoFarmApp.Interfaces;
 
 public interface IAuthService
 {
-    Task<Result<UserDto>> SignInAction(SignInDto signInDTO);
-    Task<Result<string>> AdminSignUpActionAsync(SignUpDto signUpDTO); 
-    Task<Result<string>> AddUserToFarmAsync(SignUpDto signUpDTO);
+    Task<Result<UserDto>> SignInAction(SignInDto signInDto);
+    Task<Result<string>> AdminSignUpActionAsync(SignUpDto signUpDto); 
+    Task<Result<string>> AddUserToFarmAsync(AddUserSignUpDto signUpDto);
 }

@@ -22,6 +22,7 @@ namespace NezerdoFarmApp.Models
 	public enum ActionType
 	{
 		Read = 1,
-		Write = 2
+		Write = 2,
+		Admin = 3,
 	}
 }

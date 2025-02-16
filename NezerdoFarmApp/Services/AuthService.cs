@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -79,7 +80,8 @@ public class AuthService(ApplicationDbContext dataContext, IConfiguration config
         return Result.Success("Could not Sign up user");
     }
 
-    public async Task<Result<string>> AddUserToFarmAsync(SignUpDto signUpDTO)
+    [Authorize(Roles = "Admin")]
+    public async Task<Result<string>> AddUserToFarmAsync(AddUserSignUpDto signUpDTO)
     {
         throw new NotImplementedException();
     }

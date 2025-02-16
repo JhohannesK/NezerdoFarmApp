@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NezerdoFarmApp.DTOs;
+using NezerdoFarmApp.Interfaces;
 using NezerdoFarmApp.Models;
 using NezerdoFarmApp.Services;
 using NezerdoFarmApp.Shared;
@@ -9,9 +10,8 @@ namespace NezerdoFarmApp.Controllers;
 [Route("api/v1/farm-roles")]
 [ApiController]
 
-public class FarmRolesController: ControllerBase
+public class FarmRolesController(IFarmRoleService farmRoleService): ControllerBase
 {
-    private readonly FarmRoleService _roleService;
 
     [HttpPost("create-role")]
     public async Task<ActionResult<FarmRole>> CreateRole([FromBody] CreateRoleRequest request)
@@ -23,7 +23,7 @@ public class FarmRolesController: ControllerBase
             return BadRequest(Task.FromResult(Result.Failure("Id is not found")).Result);
         }
 
-        var result = await _roleService.CreateRoleAsync(farmId, request.RoleName, request.Permissions, request.Description);
+        var result = await farmRoleService.CreateRoleAsync(farmId, request.RoleName, request.Permissions, request.Description);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 }

@@ -84,6 +84,18 @@ using (var scope = app.Services.CreateScope())
         await roleManager.CreateAsync(new IdentityRole("User"));
 }
 
+using (var scope = app.Services.CreateScope())
+{
+    var resourceManager = scope.ServiceProvider.GetRequiredService<IFarmService>();
+    var farmRoleManager = scope.ServiceProvider.GetRequiredService<IFarmRoleService>();
+    var resources = new List<string>
+    {
+        "ALL", "SALES", "EXPENSES", "HEALTHRECORDS"
+    };
+    await resourceManager.CreateOrAddResource(resources);
+    await farmRoleManager.CreateAdminRolePermission();
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
